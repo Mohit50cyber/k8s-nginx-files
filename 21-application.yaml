@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1  # Resource ka API version
+kind: Application  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-app  # Resource ya field ka naam
+  namespace: argocd  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  project: default  # Argo CD project ka naam
+  source:  # Git repository aur manifests configuration
+    repoURL: https://github.com/YOUR-ORG/YOUR-REPO.git  # Git repository URL, apna URL set karo
+    targetRevision: main  # Git branch ya revision
+    path: nginx-base  # URL ya local filesystem path
+  destination:  # Deployment ka destination cluster
+    server: https://kubernetes.default.svc  # Target Kubernetes API server
+    namespace: nginx  # Resource kis namespace mein rahega

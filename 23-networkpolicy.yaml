@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1  # Resource ka API version
+kind: NetworkPolicy  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-ingress-policy  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  podSelector:  # Policy ke target Pods select karta hai
+    matchLabels:  # Labels ke exact match se Pods select honge
+      app: nginx  # Application ka label
+      component: deployment  # Workload ka unique label
+  policyTypes:  # Network traffic ki policy directions
+  - Ingress  # List ka individual entry
+  ingress:  # Incoming traffic ki rules
+  - ports:  # Network ports ki list
+    - protocol: TCP  # Network protocol
+      port: 80  # Service ka exposed port

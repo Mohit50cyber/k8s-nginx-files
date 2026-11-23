@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1  # Resource ka API version
+kind: StorageClass  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-local  # Resource ya field ka naam
+provisioner: kubernetes.io/no-provisioner  # Storage provisioning driver
+volumeBindingMode: Immediate  # Volume binding ka timing
+reclaimPolicy: Retain  # Dynamically provisioned volume ka deletion behavior

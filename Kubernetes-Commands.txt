@@ -1,0 +1,197 @@
+NGINX KUBERNETES PRACTICAL COMMANDS
+Run from extracted directory. Commands are examples, not a script to execute together.
+
+01. CLUSTER / CONTEXT
+minikube start  # Minikube lab cluster ya addon manage karega: start
+minikube status  # Minikube lab cluster ya addon manage karega: status
+kubectl version  # Client aur server version dikhayega
+kubectl cluster-info  # Cluster endpoints dikhayega
+kubectl config get-contexts  # Kubeconfig context inspect ya change karega
+kubectl config current-context  # Kubeconfig context inspect ya change karega
+kubectl config use-context minikube  # Kubeconfig context inspect ya change karega
+kubectl get nodes -o wide  # Resource ki current status aur details list karega
+kubectl describe node minikube  # Detailed configuration, conditions aur events dikhayega
+kubectl api-resources  # Supported resource types list karega
+kubectl api-versions  # Supported API versions list karega
+kubectl explain deployment.spec.template.spec  # API field ka documentation dikhayega
+kubectl explain hpa.spec --recursive  # API field ka documentation dikhayega
+
+02. CREATE / APPLY / VALIDATE
+kubectl apply -f 01-namespace.yaml  # YAML se resource create ya update karega
+kubectl apply -f 04-deployment.yaml --dry-run=server  # Actual resource create kiye bina configuration validate ya generate karega
+kubectl diff -f 04-deployment.yaml  # Local YAML aur live configuration ka difference dikhayega
+kubectl apply -f 04-deployment.yaml  # YAML se resource create ya update karega
+kubectl apply -f 07-service-clusterip.yaml  # YAML se resource create ya update karega
+kubectl apply -f 02-pod.yaml  # YAML se resource create ya update karega
+kubectl apply -f 03-replicaset.yaml  # YAML se resource create ya update karega
+kubectl apply -f 05-daemonset.yaml  # YAML se resource create ya update karega
+kubectl apply -f 10-service-headless.yaml  # YAML se resource create ya update karega
+kubectl apply -f 06-statefulset.yaml  # YAML se resource create ya update karega
+# Imperative alternatives (different names)
+kubectl create namespace nginx-test  # Specified resource imperatively create karega
+kubectl run nginx-test --image=nginx:latest -n nginx  # Specified image se Pod create karega
+kubectl create deployment nginx-test --image=nginx:latest --replicas=2 -n nginx  # Specified resource imperatively create karega
+kubectl expose deployment nginx-test --port=80 --target-port=80 -n nginx  # Workload ke liye Service create karega
+kubectl create deployment sample --image=nginx:latest --dry-run=client -o yaml  # Actual resource create kiye bina configuration validate ya generate karega
+
+03. INSPECTION / DEBUGGING
+kubectl get all -n nginx  # Resource ki current status aur details list karega
+kubectl get pods -n nginx -o wide  # Resource ki current status aur details list karega
+kubectl get pods -n nginx --show-labels  # Resource ki current status aur details list karega
+kubectl get pods -n nginx -l component=deployment  # Resource ki current status aur details list karega
+kubectl get pods -n nginx -w  # Resource status ko continuously watch karega
+kubectl get pods -A  # Resource ki current status aur details list karega
+kubectl describe pod nginx-pod -n nginx  # Detailed configuration, conditions aur events dikhayega
+kubectl logs nginx-pod -n nginx  # Container ke application logs dikhayega
+kubectl logs nginx-pod -n nginx --previous  # Pichhle terminated container ke logs dikhayega
+kubectl logs -f deployment/nginx-deployment -n nginx  # Container ke application logs dikhayega
+kubectl logs -l component=deployment --all-containers=true -n nginx  # Container ke application logs dikhayega
+kubectl get events -n nginx --sort-by=.metadata.creationTimestamp  # Resource ki current status aur details list karega
+kubectl get events -A --field-selector type=Warning  # Resource ki current status aur details list karega
+kubectl get deployment nginx-deployment -n nginx -o yaml  # Resource ki current status aur details list karega
+kubectl get pod nginx-pod -n nginx -o jsonpath='{.status.phase}'  # Resource ki current status aur details list karega
+kubectl exec -it nginx-pod -n nginx -- sh  # Running container ke andar command execute karega
+kubectl exec nginx-pod -n nginx -- nginx -t  # Running container ke andar command execute karega
+kubectl exec nginx-pod -n nginx -- ls -la /usr/share/nginx/html  # Running container ke andar command execute karega
+kubectl cp ./index.html nginx/nginx-pod:/usr/share/nginx/html/index.html  # Local aur container filesystem ke beech file copy karega
+kubectl debug -it nginx-pod -n nginx --image=busybox:1.36 --target=nginx  # Troubleshooting ke liye debug container add karega
+kubectl run dns-test -n nginx --image=busybox:1.36 --restart=Never --rm -it -- nslookup nginx-clusterip.nginx.svc.cluster.local  # Specified image se Pod create karega
+# Pending: describe pod, check events, PVC and resources.
+# CrashLoopBackOff: inspect logs --previous, exit codes and configuration.
+# ImagePullBackOff: check image tag, registry access and credentials.
+# OOMKilled: inspect last state, memory usage and limits.
+
+04. SCALING / ROLLOUT
+kubectl scale deployment nginx-deployment --replicas=4 -n nginx  # Workload ka desired replica count change karega
+kubectl scale replicaset nginx-replicaset --replicas=3 -n nginx  # Workload ka desired replica count change karega
+kubectl scale statefulset nginx-statefulset --replicas=3 -n nginx  # Workload ka desired replica count change karega
+kubectl set image deployment/nginx-deployment nginx=nginx:latest -n nginx  # Resource configuration update karega
+kubectl rollout status deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout history deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout undo deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout restart deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout pause deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout resume deployment/nginx-deployment -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout status daemonset/nginx-daemonset -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl rollout status statefulset/nginx-statefulset -n nginx  # Workload rollout ko inspect ya manage karega
+kubectl edit deployment nginx-deployment -n nginx  # Live resource configuration editor mein open karega
+kubectl set resources deployment nginx-deployment -n nginx --requests=cpu=100m,memory=128Mi --limits=cpu=200m,memory=256Mi  # Resource configuration update karega
+# Manual replica changes may be overwritten by HPA.
+
+05. NETWORKING
+kubectl get svc -n nginx  # Resource ki current status aur details list karega
+kubectl describe svc nginx-clusterip -n nginx  # Detailed configuration, conditions aur events dikhayega
+kubectl get endpointslices -n nginx -l kubernetes.io/service-name=nginx-clusterip  # Resource ki current status aur details list karega
+kubectl port-forward svc/nginx-clusterip 8080:80 -n nginx  # Local port ko Kubernetes resource ke port se connect karega
+# Separate terminal:
+curl -i http://localhost:8080  # HTTP response aur connectivity test karega
+kubectl apply -f 08-service-nodeport.yaml  # YAML se resource create ya update karega
+minikube service nginx-nodeport -n nginx --url  # Minikube lab cluster ya addon manage karega: service
+kubectl apply -f 09-service-loadbalancer.yaml  # YAML se resource create ya update karega
+minikube tunnel  # Minikube lab cluster ya addon manage karega: tunnel
+minikube addons enable ingress  # Minikube lab cluster ya addon manage karega: addons
+kubectl apply -f 11-ingress.yaml  # YAML se resource create ya update karega
+kubectl get ingress -n nginx  # Resource ki current status aur details list karega
+kubectl describe ingress nginx-ingress -n nginx  # Detailed configuration, conditions aur events dikhayega
+minikube ip  # Minikube lab cluster ya addon manage karega: ip
+# INGRESS_IP ko actual reachable ingress controller IP se replace karo:
+curl -H 'Host: nginx.local' http://INGRESS_IP/  # HTTP response aur connectivity test karega
+kubectl get networkpolicy -n nginx  # Resource ki current status aur details list karega
+kubectl apply -f 23-networkpolicy.yaml  # YAML se resource create ya update karega
+
+06. HPA / VPA / METRICS
+minikube addons enable metrics-server  # Minikube lab cluster ya addon manage karega: addons
+kubectl get deployment metrics-server -n kube-system  # Resource ki current status aur details list karega
+kubectl top nodes  # Live CPU aur memory consumption dikhayega
+kubectl top pods -n nginx --containers  # Live CPU aur memory consumption dikhayega
+kubectl apply -f 12-hpa.yaml  # YAML se resource create ya update karega
+kubectl get hpa -n nginx -w  # Resource status ko continuously watch karega
+kubectl describe hpa nginx-hpa -n nginx  # Detailed configuration, conditions aur events dikhayega
+# Run load in separate terminal; Ctrl+C stops the client.
+kubectl run load-test -n nginx --image=busybox:1.36 --restart=Never --rm -it -- sh -c 'while true; do wget -q -O /dev/null http://nginx-clusterip; done'  # Specified image se Pod create karega
+# Load may need multiple clients to reach scaling threshold.
+# VPA requires separately installed VPA CRDs and recommender.
+kubectl get crd verticalpodautoscalers.autoscaling.k8s.io  # Resource ki current status aur details list karega
+kubectl apply -f 13-vpa.yaml  # YAML se resource create ya update karega
+kubectl get vpa -n nginx  # Resource ki current status aur details list karega
+kubectl describe vpa nginx-vpa -n nginx  # Detailed configuration, conditions aur events dikhayega
+
+07. JOB / CRONJOB
+kubectl apply -f 14-job.yaml  # YAML se resource create ya update karega
+kubectl get jobs -n nginx  # Resource ki current status aur details list karega
+kubectl logs job/nginx-check -n nginx  # Container ke application logs dikhayega
+kubectl apply -f 15-cronjob.yaml  # YAML se resource create ya update karega
+kubectl get cronjobs -n nginx  # Resource ki current status aur details list karega
+kubectl create job nginx-manual --from=cronjob/nginx-check -n nginx  # Specified resource imperatively create karega
+kubectl patch cronjob nginx-check -n nginx --type=merge -p '{"spec":{"suspend":true}}'  # Resource ki selected fields update karega
+kubectl patch cronjob nginx-check -n nginx --type=merge -p '{"spec":{"suspend":false}}'  # Resource ki selected fields update karega
+
+08. STORAGE
+kubectl get sc  # Resource ki current status aur details list karega
+kubectl apply -f 20-storageclass.yaml  # YAML se resource create ya update karega
+kubectl apply -f 18-persistentvolume.yaml  # YAML se resource create ya update karega
+kubectl apply -f 19-persistentvolumeclaim.yaml  # YAML se resource create ya update karega
+kubectl get pv  # Resource ki current status aur details list karega
+kubectl get pvc -n nginx  # Resource ki current status aur details list karega
+kubectl describe pvc nginx-local-pvc -n nginx  # Detailed configuration, conditions aur events dikhayega
+kubectl describe pv nginx-local-pv  # Detailed configuration, conditions aur events dikhayega
+# Retain PV reuse only after old claim deleted, volume Released, data checked:
+kubectl patch pv nginx-local-pv --type=merge -p '{"spec":{"claimRef":null}}'  # Resource ki selected fields update karega
+
+09. CONFIG / SECURITY / RBAC
+kubectl apply -f 16-configmap.yaml  # YAML se resource create ya update karega
+kubectl apply -f 17-secret.yaml  # YAML se resource create ya update karega
+kubectl get configmap,secret -n nginx  # Resource ki current status aur details list karega
+kubectl describe configmap nginx-config -n nginx  # Detailed configuration, conditions aur events dikhayega
+kubectl apply -f 30-deployment-advanced.yaml  # YAML se resource create ya update karega
+kubectl apply -f 24-serviceaccount.yaml  # YAML se resource create ya update karega
+kubectl apply -f 25-role.yaml  # YAML se resource create ya update karega
+kubectl apply -f 26-rolebinding.yaml  # YAML se resource create ya update karega
+kubectl auth can-i list pods --as=system:serviceaccount:nginx:nginx-reader -n nginx  # RBAC permissions verify karega
+kubectl auth can-i delete pods --as=system:serviceaccount:nginx:nginx-reader -n nginx  # RBAC permissions verify karega
+kubectl apply -f 27-poddisruptionbudget.yaml  # YAML se resource create ya update karega
+kubectl apply -f 28-resourcequota.yaml  # YAML se resource create ya update karega
+kubectl apply -f 29-limitrange.yaml  # YAML se resource create ya update karega
+kubectl describe quota -n nginx  # Detailed configuration, conditions aur events dikhayega
+kubectl get pdb,limitrange -n nginx  # Resource ki current status aur details list karega
+
+10. ARGO CD (install separately, configure real repo first)
+kubectl get crd applications.argoproj.io applicationsets.argoproj.io  # Resource ki current status aur details list karega
+kubectl get pods -n argocd  # Resource ki current status aur details list karega
+kubectl apply -f 21-application.yaml  # YAML se resource create ya update karega
+# OR use ApplicationSet instead for same resources:
+kubectl apply -f 22-applicationset.yaml  # YAML se resource create ya update karega
+kubectl get applications,applicationsets -n argocd  # Resource ki current status aur details list karega
+kubectl describe application nginx-app -n argocd  # Detailed configuration, conditions aur events dikhayega
+argocd app get nginx-app  # Argo CD Application inspect ya Git se sync karega
+argocd app sync nginx-app  # Argo CD Application inspect ya Git se sync karega
+
+11. NODE MAINTENANCE (disruptive; lab only)
+kubectl cordon minikube  # Node par naye Pods ki scheduling block karega
+kubectl uncordon minikube  # Node par scheduling dobara enable karega
+# Drain can interrupt workloads; inspect PDB and local data first.
+kubectl drain minikube --ignore-daemonsets  # Node se eligible Pods evict karega; disruptive operation
+kubectl uncordon minikube  # Node par scheduling dobara enable karega
+
+12. DELETE / CLEANUP (destructive; verify targets)
+kubectl delete hpa nginx-hpa -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete vpa nginx-vpa -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete pod nginx-pod -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete deployment nginx-deployment -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete replicaset nginx-replicaset -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete daemonset nginx-daemonset -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl scale statefulset nginx-statefulset --replicas=0 -n nginx  # Workload ka desired replica count change karega
+kubectl delete statefulset nginx-statefulset -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete cronjob nginx-check -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete job nginx-check -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete -f 11-ingress.yaml  # Specified resource delete karega; pehle target verify karo
+kubectl delete svc nginx-clusterip -n nginx  # Specified resource delete karega; pehle target verify karo
+# PVC deletion may destroy data. Check reclaim policy before deletion.
+kubectl delete pvc nginx-local-pvc -n nginx  # Specified resource delete karega; pehle target verify karo
+kubectl delete pv nginx-local-pv  # Specified resource delete karega; pehle target verify karo
+kubectl delete sc nginx-local  # Specified resource delete karega; pehle target verify karo
+# Namespace deletion removes all namespaced resources, including PVCs.
+kubectl delete namespace nginx  # Specified resource delete karega; pehle target verify karo
+# Cluster-scoped PV and StorageClass are not deleted with namespace.
+minikube stop  # Minikube lab cluster ya addon manage karega: stop
+# minikube delete destroys entire lab cluster; only if explicitly intended.

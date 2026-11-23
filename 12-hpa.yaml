@@ -1,0 +1,46 @@
+apiVersion: autoscaling/v2  # Resource ka API version
+kind: HorizontalPodAutoscaler  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-hpa  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  scaleTargetRef:  # Scaling ka target workload
+    apiVersion: apps/v1  # Resource ka API version
+    kind: Deployment  # Kubernetes resource ka type
+    name: nginx-deployment  # Resource ya field ka naam
+  minReplicas: 2  # Minimum replicas ki limit
+  maxReplicas: 10  # Maximum replicas ki limit
+  metrics:  # Scaling ke liye monitored metrics
+  - type: Resource  # Configuration ka type select karta hai
+    resource:  # CPU ya memory metric configuration
+      name: cpu  # Resource ya field ka naam
+      target:  # Metric ka desired target
+        type: Utilization  # Configuration ka type select karta hai
+        averageUtilization: 70  # Resource request ke percentage ka target
+  - type: Resource  # Configuration ka type select karta hai
+    resource:  # CPU ya memory metric configuration
+      name: memory  # Resource ya field ka naam
+      target:  # Metric ka desired target
+        type: Utilization  # Configuration ka type select karta hai
+        averageUtilization: 80  # Resource request ke percentage ka target
+  behavior:  # Scaling speed aur stability configuration
+    scaleUp:  # Pods badhane ki policy
+      stabilizationWindowSeconds: 0  # Purani recommendations consider karne ka time
+      selectPolicy: Max  # Multiple policies mein selection rule
+      policies:  # Scaling rate limit ki policies
+      - type: Percent  # Configuration ka type select karta hai
+        value: 100  # Policy ya configuration ki value
+        periodSeconds: 15  # Policy ka time interval seconds mein
+      - type: Pods  # Configuration ka type select karta hai
+        value: 4  # Policy ya configuration ki value
+        periodSeconds: 15  # Policy ka time interval seconds mein
+    scaleDown:  # Pods ghataane ki policy
+      stabilizationWindowSeconds: 300  # Purani recommendations consider karne ka time
+      selectPolicy: Min  # Multiple policies mein selection rule
+      policies:  # Scaling rate limit ki policies
+      - type: Percent  # Configuration ka type select karta hai
+        value: 25  # Policy ya configuration ki value
+        periodSeconds: 60  # Policy ka time interval seconds mein
+      - type: Pods  # Configuration ka type select karta hai
+        value: 1  # Policy ya configuration ki value
+        periodSeconds: 60  # Policy ka time interval seconds mein

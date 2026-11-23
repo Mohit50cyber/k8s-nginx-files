@@ -1,0 +1,28 @@
+apiVersion: apps/v1  # Resource ka API version
+kind: DaemonSet  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-daemonset  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  selector:  # Matching resources select karta hai
+    matchLabels:  # Labels ke exact match se Pods select honge
+      app: nginx  # Application ka label
+      component: daemonset  # Workload ka unique label
+  template:  # Naye Pods ka template
+    metadata:  # Resource ki identity aur metadata
+      labels:  # Resource ko identify karne wale labels
+        app: nginx  # Application ka label
+        component: daemonset  # Workload ka unique label
+    spec:  # Desired configuration define karta hai
+      containers:  # Pod ke containers ki list
+      - name: nginx  # Resource ya field ka naam
+        image: nginx:latest  # Container image ka naam aur tag
+        ports:  # Network ports ki list
+        - containerPort: 80  # Container ka listening port
+        resources:  # CPU aur memory configuration
+          requests:  # Scheduling ke liye required resources
+            cpu: 100m  # CPU quantity millicores mein
+            memory: 128Mi  # Memory quantity MiB mein
+          limits:  # Container ki maximum resource limits
+            cpu: 200m  # CPU quantity millicores mein
+            memory: 256Mi  # Memory quantity MiB mein

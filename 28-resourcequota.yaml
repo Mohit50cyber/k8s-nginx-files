@@ -1,0 +1,12 @@
+apiVersion: v1  # Resource ka API version
+kind: ResourceQuota  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-quota  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  hard:  # Namespace ki maximum aggregate quota
+    requests.cpu: '4'  # Is setting ki value define karta hai
+    requests.memory: 8Gi  # Is setting ki value define karta hai
+    limits.cpu: '8'  # Is setting ki value define karta hai
+    limits.memory: 16Gi  # Is setting ki value define karta hai
+    pods: '40'  # Is setting ki value define karta hai

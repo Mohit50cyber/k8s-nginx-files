@@ -1,0 +1,24 @@
+apiVersion: autoscaling.k8s.io/v1  # Resource ka API version
+kind: VerticalPodAutoscaler  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-vpa  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  targetRef:  # VPA ka target workload
+    apiVersion: apps/v1  # Resource ka API version
+    kind: Deployment  # Kubernetes resource ka type
+    name: nginx-deployment  # Resource ya field ka naam
+  updatePolicy:  # VPA resource updates ki policy
+    updateMode: 'Off'  # VPA recommendation apply karne ka mode
+  resourcePolicy:  # Resource recommendations ki limits
+    containerPolicies:  # Container-wise VPA policy
+    - containerName: nginx  # Target container ka naam
+      minAllowed:  # Minimum recommended resources
+        cpu: 50m  # CPU quantity millicores mein
+        memory: 64Mi  # Memory quantity MiB mein
+      maxAllowed:  # Maximum recommended resources
+        cpu: 500m  # CPU quantity millicores mein
+        memory: 512Mi  # Memory quantity MiB mein
+      controlledResources:  # VPA ke managed resource names
+      - cpu  # CPU quantity millicores mein
+      - memory  # Memory quantity MiB mein

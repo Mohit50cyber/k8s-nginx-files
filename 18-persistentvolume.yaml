@@ -1,0 +1,14 @@
+apiVersion: v1  # Resource ka API version
+kind: PersistentVolume  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-local-pv  # Resource ya field ka naam
+spec:  # Desired configuration define karta hai
+  capacity:  # Volume ki available capacity
+    storage: 1Gi  # Storage capacity
+  accessModes:  # Volume access ka mode
+  - ReadWriteOnce  # List ka individual entry
+  persistentVolumeReclaimPolicy: Retain  # PVC deletion ke baad volume ka behavior
+  storageClassName: nginx-local  # Storage provisioning class
+  hostPath:  # Node-local directory configuration
+    path: /data/nginx  # URL ya local filesystem path
+    type: DirectoryOrCreate  # Configuration ka type select karta hai

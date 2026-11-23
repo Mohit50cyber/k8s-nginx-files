@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1  # Resource ka API version
+kind: RoleBinding  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-reader  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+subjects:  # Permission receive karne wali identities
+- kind: ServiceAccount  # Kubernetes resource ka type
+  name: nginx-reader  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+roleRef:  # Assigned Role ka reference
+  apiGroup: rbac.authorization.k8s.io  # Resource ka API group
+  kind: Role  # Kubernetes resource ka type
+  name: nginx-reader  # Resource ya field ka naam

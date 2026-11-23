@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1  # Resource ka API version
+kind: Ingress  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-ingress  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  ingressClassName: nginx  # Ingress controller ki class
+  rules:  # Routing ya authorization rules
+  - host: nginx.local  # Request ka hostname
+    http:  # HTTP routing configuration
+      paths:  # URL path rules
+      - path: /  # URL ya local filesystem path
+        pathType: Prefix  # URL matching ka rule
+        backend:  # Request forward karne ka destination
+          service:  # Backend Service configuration
+            name: nginx-clusterip  # Resource ya field ka naam
+            port:  # Service ka exposed port
+              number: 80  # Service port number

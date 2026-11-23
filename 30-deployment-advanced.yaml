@@ -1,0 +1,60 @@
+apiVersion: apps/v1  # Resource ka API version
+kind: Deployment  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-advanced  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  replicas: 2  # Desired Pods ki quantity
+  selector:  # Matching resources select karta hai
+    matchLabels:  # Labels ke exact match se Pods select honge
+      app: nginx  # Application ka label
+      component: advanced  # Workload ka unique label
+  template:  # Naye Pods ka template
+    metadata:  # Resource ki identity aur metadata
+      labels:  # Resource ko identify karne wale labels
+        app: nginx  # Application ka label
+        component: advanced  # Workload ka unique label
+    spec:  # Desired configuration define karta hai
+      containers:  # Pod ke containers ki list
+      - name: nginx  # Resource ya field ka naam
+        image: nginx:latest  # Container image ka naam aur tag
+        ports:  # Network ports ki list
+        - containerPort: 80  # Container ka listening port
+        resources:  # CPU aur memory configuration
+          requests:  # Scheduling ke liye required resources
+            cpu: 100m  # CPU quantity millicores mein
+            memory: 128Mi  # Memory quantity MiB mein
+          limits:  # Container ki maximum resource limits
+            cpu: 200m  # CPU quantity millicores mein
+            memory: 256Mi  # Memory quantity MiB mein
+        volumeMounts:  # Container mein storage mount karta hai
+        - name: html  # Resource ya field ka naam
+          mountPath: /usr/share/nginx/html  # Container ke andar mount location
+          readOnly: true  # Mount ko read-only rakhta hai
+        readinessProbe:  # Traffic receive karne ki readiness check
+          httpGet:  # HTTP health check request
+            path: /  # URL ya local filesystem path
+            port: 80  # Service ka exposed port
+          periodSeconds: 5  # Policy ka time interval seconds mein
+          failureThreshold: 3  # Failure count threshold
+        livenessProbe:  # Container health check
+          httpGet:  # HTTP health check request
+            path: /  # URL ya local filesystem path
+            port: 80  # Service ka exposed port
+          periodSeconds: 5  # Policy ka time interval seconds mein
+          failureThreshold: 3  # Failure count threshold
+        startupProbe:  # Application startup check
+          httpGet:  # HTTP health check request
+            path: /  # URL ya local filesystem path
+            port: 80  # Service ka exposed port
+          periodSeconds: 5  # Policy ka time interval seconds mein
+          failureThreshold: 30  # Failure count threshold
+      volumes:  # Pod storage sources
+      - name: html  # Resource ya field ka naam
+        configMap:  # ConfigMap storage source
+          name: nginx-config  # Resource ya field ka naam
+  strategy:  # Deployment update strategy
+    type: RollingUpdate  # Configuration ka type select karta hai
+    rollingUpdate:  # Rolling update configuration
+      maxSurge: 1  # Update mein extra Pods ki limit
+      maxUnavailable: 0  # Update mein unavailable Pods ki limit

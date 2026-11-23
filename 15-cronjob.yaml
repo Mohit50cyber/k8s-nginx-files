@@ -1,0 +1,22 @@
+apiVersion: batch/v1  # Resource ka API version
+kind: CronJob  # Kubernetes resource ka type
+metadata:  # Resource ki identity aur metadata
+  name: nginx-check  # Resource ya field ka naam
+  namespace: nginx  # Resource kis namespace mein rahega
+spec:  # Desired configuration define karta hai
+  schedule: '*/5 * * * *'  # Cron expression ke according job schedule
+  concurrencyPolicy: Forbid  # Overlapping Jobs ka behavior
+  successfulJobsHistoryLimit: 3  # Successful Jobs ki retained quantity
+  failedJobsHistoryLimit: 1  # Failed Jobs ki retained quantity
+  jobTemplate:  # Scheduled Job ka template
+    spec:  # Desired configuration define karta hai
+      backoffLimit: 3  # Failed Job ke retries ki limit
+      template:  # Naye Pods ka template
+        spec:  # Desired configuration define karta hai
+          restartPolicy: Never  # Container restart ka rule
+          containers:  # Pod ke containers ki list
+          - name: nginx-check  # Resource ya field ka naam
+            image: nginx:latest  # Container image ka naam aur tag
+            command:  # Container mein execute hone wala command
+            - nginx  # Nginx executable run karega
+            - -t  # List ka individual entry
